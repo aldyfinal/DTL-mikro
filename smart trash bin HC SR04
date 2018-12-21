@@ -1,0 +1,69 @@
+#include <Servo.h>
+Servo myservo;
+const int trigPin = 5; //sensor jarak objek luar
+const int echoPin = 4;
+const int trigPin2 = 7; //sensor jarak objek dalam
+const int echoPin2 = 6;
+
+long duration, duration2;
+int distance, distance2;
+void setup() {
+  myservo.attach(3);
+  myservo.write(0);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+  Serial.begin(9600);
+  pinMode(11, OUTPUT);    //LED inkator aktif(Hijau)
+  pinMode(12, OUTPUT);    //LED inkator tidak aktif (Merah)
+  digitalWrite(11, LOW);
+  digitalWrite(12, LOW);
+
+
+}
+
+void loop() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+
+  digitalWrite(trigPin2, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin2, LOW);
+
+  duration2 = pulseIn(echoPin2, HIGH);
+  distance2 = duration2 * 0.034 / 2;
+
+  Serial.print("Distance : ");
+  Serial.println(distance);
+  Serial.print("Distance2 : ");
+  Serial.println(distance2);
+  if (distance2 > 5) {            //Kondisi aktif (Tempat sampah kosong)
+    digitalWrite(11, HIGH);     //Jarak objek dalam > 5cm
+    digitalWrite(12, LOW);
+    if (distance <= 20) {       //Perintah membuka penutup tempat sampah
+      myservo.write(120);       //Jarak objek luar < 20cm
+      delay(2000);
+    }
+    if (distance > 20) {     //Perintah menutup penutup tempat sampah
+      myservo.write(0);           //Jarak objek luar > 20cm
+    }
+  }
+  if (distance2 <= 5) {      //Kondisi aktif (Tempat sampah penuh)
+    digitalWrite(11, LOW);        //Jarak objek dalam < 5cm
+    myservo.write(0);
+    digitalWrite(12, HIGH);
+    delay(100);
+    digitalWrite(12, LOW);
+    delay(300);
+    digitalWrite(12, HIGH);
+  }
+}
